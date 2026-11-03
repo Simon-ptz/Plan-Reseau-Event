@@ -1,0 +1,194 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Plan réseau événement</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#101a29;color:#eaf3ff;font-family:Arial,sans-serif}
+header{padding:20px 25px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+h1{font-size:21px;letter-spacing:1px;margin:0}
+header p{font-size:11px;color:#91a9c2;margin:6px 0 0}
+button{background:#1679a9;color:white;border:0;border-radius:7px;padding:10px 15px;cursor:pointer}
+#map{
+ position:relative;margin:0 18px 15px;height:690px;overflow:hidden;
+ border:1px solid #40566c;border-radius:13px;
+ background-color:#d9e3d7;
+ background-image:
+ linear-gradient(35deg,transparent 48%,#ffffff45 49%,#ffffff45 51%,transparent 52%),
+ radial-gradient(circle at 20% 25%,#c6d8c3 0 4%,transparent 4.5%),
+ radial-gradient(circle at 80% 70%,#c6d8c3 0 5%,transparent 5.5%);
+}
+.path{position:absolute;background:#f4f0df;border:1px solid #c9c3ad;z-index:0}
+.path.horizontal{height:35px;left:0;right:0;top:49%}
+.path.vertical{width:32px;top:0;bottom:0;left:53%}
+.grass-label{position:absolute;color:#71816d;font-size:10px;letter-spacing:2px;z-index:1}
+.zone{
+ position:absolute;z-index:2;width:155px;min-height:115px;
+ background:#fff;border:1px solid #8ca0ae;border-radius:10px;
+ box-shadow:0 4px 12px #24384a25;padding:12px;text-align:center;
+ color:#24394c;
+}
+.zone .ico{font-size:26px;margin-bottom:6px}
+.zone strong{font-size:12px;display:block}
+.zone small{font-size:10px;color:#667c8e;display:block;margin-top:5px}
+.regie{
+ position:absolute;left:3%;top:5%;width:205px;height:210px;
+ background:#152c43;border:2px solid #2498c7;border-radius:12px;
+ color:white;padding:12px;z-index:4;box-shadow:0 5px 20px #12283b55;
+}
+.regie h3{margin:0 0 10px;color:#65d6ff;font-size:13px;letter-spacing:1px}
+.equip{display:flex;justify-content:space-around;gap:8px}
+.equip div{background:#26445d;padding:10px 5px;border-radius:7px;flex:1;text-align:center;font-size:23px}
+.equip small{display:block;font-size:9px;margin-top:5px;color:#d7e7f4}
+.big-router{margin-top:10px;background:#075e85;border:1px solid #4bd8ff;border-radius:8px;text-align:center;padding:8px}
+.big-router strong{font-size:11px;display:block;color:#b7f0ff}
+.big-router small{font-size:9px;color:#d2f2ff}
+.node{
+ position:absolute;z-index:3;width:145px;text-align:center;
+ transform:translate(-50%,-50%);
+}
+.station{
+ background:#fff;border:1px solid #9aabb7;border-radius:9px;
+ padding:10px 6px;box-shadow:0 4px 12px #20344830;color:#233a4e;
+}
+.station .ico{font-size:25px}
+.station strong{font-size:11px;display:block;margin-top:4px}
+.router{
+ display:inline-block;background:#143e5b;color:#d9f6ff;
+ padding:6px 9px;border:1px solid #31bde9;border-radius:7px;
+ font-size:10px;margin-top:7px;box-shadow:0 0 10px #19b9ed33;
+}
+svg{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none}
+.link{fill:none;stroke:#168ec1;stroke-width:2.8;stroke-dasharray:8 7;opacity:.85}
+.packet{fill:#00bfff;filter:drop-shadow(0 0 5px #00aaff)}
+.legend{
+ position:absolute;bottom:15px;left:18px;background:#fffE;
+ color:#34495a;border:1px solid #bdc9d0;border-radius:8px;
+ padding:10px 14px;font-size:10px;z-index:5;display:flex;gap:16px;
+}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#168ec1;margin-right:5px}
+@media(max-width:700px){
+ #map{height:650px;min-width:650px}
+ .map-wrap{overflow-x:auto}
+ header{align-items:flex-start;flex-direction:column}
+}
+</style>
+</head>
+<body>
+<header>
+ <div>
+  <h1>PLAN D'IMPLANTATION — RÉSEAU ÉVÉNEMENTIEL</h1>
+  <p>Vue aérienne · Infrastructure locale · Communication sans fil</p>
+ </div>
+ <button onclick="toggleAnimation()" id="toggle">⏸ Pause animation</button>
+</header>
+
+<div class="map-wrap">
+<div id="map">
+ <div class="path horizontal"></div>
+ <div class="path vertical"></div>
+ <div class="grass-label" style="left:36%;top:8%">ZONE ÉVÉNEMENTIELLE</div>
+ <div class="grass-label" style="right:4%;bottom:8%">ESPACE PUBLIC</div>
+
+ <!-- Connexions -->
+ <svg viewBox="0 0 1000 690" preserveAspectRatio="none">
+  <path class="link" id="l1" d="M205 160 Q310 70 410 150"/>
+  <path class="link" id="l2" d="M205 160 Q490 30 750 150"/>
+  <path class="link" id="l3" d="M205 160 Q420 340 510 350"/>
+  <path class="link" id="l4" d="M205 160 Q260 470 320 530"/>
+  <path class="link" id="l5" d="M205 160 Q650 570 790 510"/>
+  <circle class="packet" r="5">
+   <animateMotion dur="3s" repeatCount="indefinite" path="M205 160 Q310 70 410 150"/>
+  </circle>
+  <circle class="packet" r="5">
+   <animateMotion dur="4s" repeatCount="indefinite" path="M205 160 Q490 30 750 150"/>
+  </circle>
+  <circle class="packet" r="5">
+   <animateMotion dur="3.5s" repeatCount="indefinite" path="M205 160 Q420 340 510 350"/>
+  </circle>
+  <circle class="packet" r="5">
+   <animateMotion dur="4.2s" repeatCount="indefinite" path="M205 160 Q260 470 320 530"/>
+  </circle>
+  <circle class="packet" r="5">
+   <animateMotion dur="4.5s" repeatCount="indefinite" path="M205 160 Q650 570 790 510"/>
+  </circle>
+ </svg>
+
+ <!-- Régie -->
+ <div class="regie">
+  <h3>📍 RÉGIE TECHNIQUE</h3>
+  <div class="equip">
+   <div>🖥️<small>Serveur</small></div>
+   <div>📺<small>Écran géant</small></div>
+  </div>
+  <div class="big-router">
+   📡
+   <strong>ROUTEUR CENTRAL</strong>
+   <small>Distribution du réseau</small>
+  </div>
+ </div>
+
+ <!-- Pôles dispersés -->
+ <div class="node" style="left:41%;top:22%">
+  <div class="station">
+   <div class="ico">🎮</div><strong>PÔLE 01</strong>
+   <small>Activité interactive</small>
+  </div>
+  <div class="router">📶 ROUTEUR 01</div>
+ </div>
+
+ <div class="node" style="left:75%;top:22%">
+  <div class="station">
+   <div class="ico">🎯</div><strong>PÔLE 02</strong>
+   <small>Activité interactive</small>
+  </div>
+  <div class="router">📶 ROUTEUR 02</div>
+ </div>
+
+ <div class="node" style="left:51%;top:56%">
+  <div class="station">
+   <div class="ico">🕹️</div><strong>PÔLE 03</strong>
+   <small>Activité interactive</small>
+  </div>
+  <div class="router">📶 ROUTEUR 03</div>
+ </div>
+
+ <div class="node" style="left:31%;top:78%">
+  <div class="station">
+   <div class="ico">🎨</div><strong>PÔLE 04</strong>
+   <small>Activité interactive</small>
+  </div>
+  <div class="router">📶 ROUTEUR 04</div>
+ </div>
+
+ <div class="node" style="left:79%;top:76%">
+  <div class="station">
+   <div class="ico">🏆</div><strong>PÔLE 05</strong>
+   <small>Activité interactive</small>
+  </div>
+  <div class="router">📶 ROUTEUR 05</div>
+ </div>
+
+ <div class="legend">
+  <span><i class="dot"></i>Liaison Wi-Fi animée</span>
+  <span>📶 Routeur secondaire</span>
+  <span>📡 Routeur central</span>
+ </div>
+</div>
+</div>
+
+<script>
+let running=true;
+function toggleAnimation(){
+ const animations=document.querySelectorAll('animateMotion');
+ running=!running;
+ animations.forEach(a=>running?a.beginElement():a.endElement());
+ document.getElementById('toggle').textContent=
+ running?'⏸ Pause animation':'▶ Reprendre animation';
+}
+</script>
+</body>
+</html>
